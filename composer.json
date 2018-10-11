@@ -1,0 +1,14 @@
+{
+    "name": "igorut/parser",
+    "description": "HTML parser",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Vyacheslav",
+            "email": "sla6843@yandex.ru"
+        }
+    ],
+    "minimum-stability": "stable",
+    "require": {}
+}
