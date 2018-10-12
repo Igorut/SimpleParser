@@ -9,6 +9,16 @@
             "email": "sla6843@yandex.ru"
         }
     ],
-    "minimum-stability": "stable",
-    "require": {}
+    "require": {
+        "PHP": ">=7.2",
+        "ext-dom": "*"
+    },
+    "autoload": {
+        "psr-4": {
+            "SimpleParser\\": "lib/"
+        }
+    },
+    "require-dev": {
+        "symfony/var-dumper": "^4.1"
+    }
 }
