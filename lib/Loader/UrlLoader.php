@@ -2,12 +2,8 @@
 
 namespace SimpleParser\Loader;
 
-use SimpleParser\Exceptions\{EmptyUrlException,
-    RetrieveDataException,
-    UncorrectedUrlException,
-    UndefinedParsedUrlKeyException};
-
-use SimpleParser\Parser;
+use SimpleParser\Document\Document;
+use SimpleParser\Exceptions\{EmptyUrlException, RetrieveDataException, UncorrectedUrlException};
 
 class UrlLoader implements LoaderInterface
 {
@@ -22,7 +18,7 @@ class UrlLoader implements LoaderInterface
     private $context;
 
     /**
-     *
+     * The correct order parts of the url
      */
     private const URL_PARTS = [
         'scheme',
@@ -38,10 +34,21 @@ class UrlLoader implements LoaderInterface
      * @param string $url
      * @param null $context
      *
-     * @return UrlLoader
+     * @throws UncorrectedUrlException
+     *
+     */
+    public function __construct(string $url, $context = null)
+    {
+        $this->setUrl($url, $context);
+    }
+
+    /**
+     * @param string $url
+     * @param null $context
+     *
      * @throws UncorrectedUrlException
      */
-    public function setUrl(string $url, $context = null): self
+    public function setUrl(string $url, $context = null): void
     {
         if (!filter_var($url, FILTER_VALIDATE_URL)) {
             throw new UncorrectedUrlException(sprintf('Uncorrected url: %s', $url));
@@ -49,16 +56,16 @@ class UrlLoader implements LoaderInterface
 
         $this->url = $url;
         $this->context = $context;
-
-        return $this;
     }
 
     /**
-     * @return Parser
+     * @inheritdoc
+     *
      * @throws EmptyUrlException
      * @throws RetrieveDataException
+     * @throws UncorrectedUrlException
      */
-    public function load(): Parser
+    public function load(): Document
     {
         if ($this->url === null) {
             throw new EmptyUrlException('Url is empty');
@@ -66,94 +73,72 @@ class UrlLoader implements LoaderInterface
 
         $preparedUrl = $this->prepareUrl($this->url);
         $content = file_get_contents($preparedUrl, false, $this->context);
-
         if ($content === false) {
             throw new RetrieveDataException(sprintf('Unable to retrieve data from: %s', $this->url));
         }
 
         $document = new \DOMDocument();
-        $document->loadHTML($content);
+        $document->loadHTML($content, self::LIBXML_OPTIONS);
 
-        return new Parser($document);
+        return new Document($document);
     }
 
     /**
+     * Prepare url before load
+     *
+     * Splits the url into component parts, forms a url template based on the received parts.
+     * After, assembles the component parts into a url and converts the query part to RFC 3986
+     *
      * @param string $url
      *
      * @return string
-     */
-    private function prepareUrlQuery(string $url): string
-    {
-        return rawurlencode(rawurldecode($url));
-    }
-
-    /**
-     * @param string $url
-     *
-     * @return string
+     * @throws UncorrectedUrlException
      */
     private function prepareUrl(string $url): string
     {
-        $parsedUrl = parse_url($url);
+        if (false === $parsedUrl = parse_url($url)) {
+            throw new UncorrectedUrlException(sprintf('Can\'t parse url: %s', $url));
+        }
 
-        $urlParts = self::URL_PARTS;
-
-        $preparedUrlTemplate = implode('', $this->prettyFastArrayIntersect($urlParts, array_flip($parsedUrl)));
-
-        foreach ($parsedUrl as $key => &$value) {
-            switch ($key) {
+        foreach ($parsedUrl as $partKey => $value) {
+            switch ($partKey) {
                 case 'scheme':
                     {
-                        $value .= '://';
-                        break;
-                    }
-                case 'user':
-                case 'path':
-                    {
+                        $parsedUrl[$partKey] .= '://';
                         break;
                     }
                 case 'pass':
                 case 'port':
                     {
-                        $value = ':' . $value;
+                        $parsedUrl[$partKey] = ':' . $value;
                         break;
                     }
                 case 'host':
                     {
                         if (isset($parsedUrl['user']) || isset($parsedUrl['pass'])) {
-                            $value = '@' . $value;
+                            $parsedUrl[$partKey] = '@' . $value;
                         }
                         break;
                     }
                 case 'query':
                     {
-                        $value = $this->prepareUrlQuery($value);
+                        $parsedUrl[$partKey] = rawurlencode(rawurldecode($value));
                         break;
                     }
                 case 'fragment':
                     {
-                        $value = '#' . $value;
+                        $parsedUrl[$partKey] = '#' . $value;
                         break;
                     }
-                default: break;
-            }
-        }
-        unset($value);
-
-        return strtr($preparedUrlTemplate, $parsedUrl);
-    }
-
-    private function prettyFastArrayIntersect(array $firstArray, array $secondArray): array
-    {
-        $count = \count($firstArray);
-        $result = [];
-
-        for ($i = 0; $i < $count; $i++) {
-            if (\in_array($firstArray[$i], $secondArray, true)) {
-                $result[$i] = $firstArray[$i];
+                case 'user':
+                case 'path':
+                default:
+                    break;
             }
         }
 
-        return $result;
+        $urlTemplate = implode('', array_intersect(self::URL_PARTS, array_keys($parsedUrl)));
+
+        return strtr($urlTemplate, $parsedUrl);
     }
 }

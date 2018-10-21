@@ -2,7 +2,7 @@
 
 namespace SimpleParser\Exceptions;
 
-class RetrieveDataException extends \Exception
+class RetrieveDataException extends ParserException
 {
 
 }

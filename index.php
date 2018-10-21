@@ -1,26 +1,24 @@
 <?php
 
 use SimpleParser\Loader\UrlLoader;
+use SimpleParser\Parser;
 
 include 'vendor/autoload.php';
 
 $start = microtime(true);
-
 $url = 'https://yandex.ru/';
-$urlLoader = new UrlLoader();
+$parser = new Parser();
 
 try {
-    $urlLoader->setUrl($url);
+    $loader = new UrlLoader($url);
+    $document = $loader->load();
+    $parser->setDocument($document);
 
-    $parser = $urlLoader->load();
-    $parser->setPrettyFormatOutput(true);
+//    $parser->removeTags(['link', 'meta', 'style', 'script', 'noscript', 'head']);
 
-//    dump($parser->getText());
-    dump($parser->explode("\n"));
-} catch (\SimpleParser\Exceptions\UncorrectedUrlException $exception) {
-    echo $exception->getMessage();
-} catch (\SimpleParser\Exceptions\RetrieveDataException $exception) {
-    echo $exception->getMessage();
-} catch (\SimpleParser\Exceptions\EmptyUrlException $exception) {
+    dump($parser->getDocument()->enablePrettyOutput()->getText());
+} catch (\SimpleParser\Exceptions\ParserException $exception) {
     echo $exception->getMessage();
 }
+
+echo microtime(true) - $start;

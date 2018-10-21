@@ -2,9 +2,22 @@
 
 namespace SimpleParser\Loader;
 
-use SimpleParser\Parser;
+use SimpleParser\Document\Document;
 
 interface LoaderInterface
 {
-    public function load(): Parser;
+    public const LIBXML_OPTIONS =
+        LIBXML_COMPACT |
+        LIBXML_BIGLINES |
+        LIBXML_HTML_NOIMPLIED |
+        LIBXML_HTML_NODEFDTD |
+        LIBXML_PARSEHUGE |
+        LIBXML_NOERROR;
+
+    /**
+     * Load document
+     *
+     * @return Document
+     */
+    public function load(): Document;
 }

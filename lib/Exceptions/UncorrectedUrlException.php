@@ -2,7 +2,7 @@
 
 namespace SimpleParser\Exceptions;
 
-class UncorrectedUrlException extends \Exception
+class UncorrectedUrlException extends ParserException
 {
 
 }

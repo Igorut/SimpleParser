@@ -2,7 +2,7 @@
 
 namespace SimpleParser\Loader;
 
-use SimpleParser\Parser;
+use SimpleParser\Document\Document;
 
 class HTMLLoader implements LoaderInterface
 {
@@ -11,18 +11,30 @@ class HTMLLoader implements LoaderInterface
      */
     private $html;
 
-    public function setHTML(string $html): self
+    /**
+     * @param string $html
+     */
+    public function __construct(string $html)
     {
         $this->html = $html;
-
-        return $this;
     }
 
-    public function load(): Parser
+    /**
+     * @param string $html
+     */
+    public function setHTML(string $html): void
+    {
+        $this->html = $html;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function load(): Document
     {
         $document = new \DOMDocument();
-        $document->loadHTML($this->html);
+        $document->loadHTML($this->html, self::LIBXML_OPTIONS);
 
-        return new Parser($document);
+        return new Document($document);
     }
 }

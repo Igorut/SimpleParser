@@ -2,7 +2,7 @@
 
 namespace SimpleParser\Exceptions;
 
-class EmptyUrlException extends \Exception
+class EmptyUrlException extends ParserException
 {
 
 }
