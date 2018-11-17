@@ -14,9 +14,10 @@ try {
     $document = $loader->load();
     $parser->setDocument($document);
 
-//    $parser->removeTags(['link', 'meta', 'style', 'script', 'noscript', 'head']);
+//    $parser->removeTags(['head', 'link', 'style', 'script', 'noscript']);
 
-    dump($parser->getDocument()->enablePrettyOutput()->getText());
+//    dump($parser->getDocument()->enablePrettyOutput()->getText());
+    dump($parser->getElementsByClassName('media-grid__toggle-line-wrap'));
 } catch (\SimpleParser\Exceptions\ParserException $exception) {
     echo $exception->getMessage();
 }
