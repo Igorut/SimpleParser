@@ -17,7 +17,7 @@ try {
 //    $parser->removeTags(['head', 'link', 'style', 'script', 'noscript']);
 
 //    dump($parser->getDocument()->enablePrettyOutput()->getText());
-    dump($parser->getElementsByClassName('media-grid__toggle-line-wrap'));
+    dump($parser->getElementsByClassName('container'));
 } catch (\SimpleParser\Exceptions\ParserException $exception) {
     echo $exception->getMessage();
 }

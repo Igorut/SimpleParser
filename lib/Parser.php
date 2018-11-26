@@ -6,6 +6,7 @@ use SimpleParser\Document\Document;
 use SimpleParser\Document\Element;
 use SimpleParser\Exceptions\NodeIteratorException;
 use SimpleParser\Exceptions\ParserException;
+use SimpleParser\Helper\Iterator;
 
 class Parser
 {
@@ -15,25 +16,14 @@ class Parser
     private $document;
 
     /**
-     * @param Document $document
-     *
-     * @return Parser
+     * @var Iterator
      */
-    public function setDocument(Document $document): self
+    private $iterator;
+
+    public function __construct(Document $document = null)
     {
         $this->document = $document;
-
-        return $this;
-    }
-
-    /**
-     * Return document instance
-     *
-     * @return Document
-     */
-    public function getDocument(): Document
-    {
-        return $this->document;
+        $this->iterator = new Iterator();
     }
 
     /**
@@ -45,17 +35,16 @@ class Parser
      */
     public function explode(string $delimiter): array
     {
-        $isPrettyOutput = false;
-
-        if ($this->document->isPrettyOutput()) {
-            $isPrettyOutput = true;
-            $this->document->disablePrettyOutput();
-        }
-
-        $explodedContent = \explode($delimiter, $this->document->getText());
+        $isPrettyOutput = $this->document->isPrettyOutput();
 
         if ($isPrettyOutput) {
-            $this->document->enablePrettyOutput();
+            $this->document->setPrettyOutput(false);
+        }
+
+        $explodedContent = explode($delimiter, $this->document->getText());
+
+        if ($isPrettyOutput) {
+            $this->document->setPrettyOutput(true);
         }
 
         return $explodedContent;
@@ -85,12 +74,12 @@ class Parser
         /** @var Element[] $matches */
         $matches = [];
 
-        $this->iterateNodes($this->document->getDOMDocument(), function (\DOMNode $rootNode) use ($className, &$matches) {
-            for ($i = 0; $i < $rootNode->childNodes->length; $i++) {
+        $this->iterator->iterateNodes($this->document->getDOMDocument(), function (\DOMNode $rootNode) use ($className, &$matches) {
+            for ($i = 0; $i < $rootNode->childNodes->count(); $i++) {
                 $node = $rootNode->childNodes->item($i);
 
                 if ($node instanceof \DOMElement) {
-                    $nodeClasses = \explode(' ', $node->getAttribute('class'));
+                    $nodeClasses = explode(' ', $node->getAttribute('class'));
 
                     if (\in_array($className, $nodeClasses, true)) {
                         $matches[] = new Element($node);
@@ -149,8 +138,8 @@ class Parser
         $tagsToParseAgain = [];
 
         foreach ($tags as $tag) {
-            $this->iterateNodes($this->document->getDOMDocument(), function (\DOMNode $rootNode) use ($tag) {
-                for ($i = 0; $i < $rootNode->childNodes->length; $i++) {
+            $this->iterator->iterateNodes($this->document->getDOMDocument(), function (\DOMNode $rootNode) use ($tag) {
+                for ($i = 0; $i < $rootNode->childNodes->count(); $i++) {
                     $node = $rootNode->childNodes->item($i);
 
                     if ($node->nodeName === $tag) {
@@ -163,7 +152,7 @@ class Parser
                 yield;
             });
 
-            if ($this->document->getDOMDocument()->getElementsByTagName($tag)->length > 0) {
+            if ($this->document->getDOMDocument()->getElementsByTagName($tag)->count() > 0) {
                 $tagsToParseAgain[] = $tag;
             }
         }
@@ -191,9 +180,9 @@ class Parser
      */
     public function getTagCount(): array
     {
-        if (\preg_match_all('/<([a-z]+)[\s|>]/ui', $this->document->getText(), $tags, PREG_PATTERN_ORDER) === false) {
+        if (preg_match_all('/<([a-z]+)[\s|>]/ui', $this->document->getText(), $tags, PREG_PATTERN_ORDER) === false) {
             throw new ParserException(
-                \sprintf('Error finding tags with regular expression in method: %s', __METHOD__)
+                sprintf('Error finding tags with regular expression in method: %s', __METHOD__)
             );
         }
 
@@ -210,36 +199,32 @@ class Parser
     }
 
     /**
-     * Iterate over nodes from root node
+     * @param Document $document
      *
-     * @param \DOMNode $rootNode
-     * @param callable $callback SHOULD return \Generator with next node or empty for end iterating
-     *
-     * @throws NodeIteratorException if the callback returns something else than the \Generator instance
+     * @return Parser
      */
-    public function iterateNodes(\DOMNode $rootNode, callable $callback): void
+    public function setDocument(Document $document): self
     {
-        if ($rootNode->hasChildNodes()) {
-            /** @var \Generator $generator */
-            $generator = $callback($rootNode);
+        $this->document = $document;
 
-            if (!($generator instanceof \Generator)) {
-                throw new NodeIteratorException(
-                    sprintf('Callback should return a instance of Generator, %s returned', \gettype($generator))
-                );
-            }
+        return $this;
+    }
 
-            while (true) {
-                $node = $generator->current();
+    /**
+     * Return document instance
+     *
+     * @return Document
+     */
+    public function getDocument(): Document
+    {
+        return $this->document;
+    }
 
-                if ($node === null) {
-                    break;
-                }
-
-                $this->iterateNodes($node, $callback);
-
-                $generator->next();
-            }
-        }
+    /**
+     * @return Iterator
+     */
+    public function getIterator(): Iterator
+    {
+        return $this->iterator;
     }
 }

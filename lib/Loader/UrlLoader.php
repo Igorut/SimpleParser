@@ -35,7 +35,6 @@ class UrlLoader implements LoaderInterface
      * @param null $context
      *
      * @throws UncorrectedUrlException
-     *
      */
     public function __construct(string $url, $context = null)
     {
@@ -50,8 +49,8 @@ class UrlLoader implements LoaderInterface
      */
     public function setUrl(string $url, $context = null): void
     {
-        if (!\filter_var($url, FILTER_VALIDATE_URL)) {
-            throw new UncorrectedUrlException(\sprintf('Uncorrected url: %s', $url));
+        if (!filter_var($url, FILTER_VALIDATE_URL)) {
+            throw new UncorrectedUrlException(sprintf('Uncorrected url: %s', $url));
         }
 
         $this->url = $url;
@@ -72,10 +71,10 @@ class UrlLoader implements LoaderInterface
         }
 
         $preparedUrl = $this->prepareUrl($this->url);
-        $content = \file_get_contents($preparedUrl, false, $this->context);
+        $content = file_get_contents($preparedUrl, false, $this->context);
 
         if ($content === false) {
-            throw new RetrieveDataException(\sprintf('Unable to retrieve data from: %s', $this->url));
+            throw new RetrieveDataException(sprintf('Unable to retrieve data from: %s', $this->url));
         }
 
         $document = new \DOMDocument();
@@ -97,8 +96,8 @@ class UrlLoader implements LoaderInterface
      */
     private function prepareUrl(string $url): string
     {
-        if (false === $parsedUrl = \parse_url($url)) {
-            throw new UncorrectedUrlException(\sprintf('Can\'t parse url: %s', $url));
+        if (false === $parsedUrl = parse_url($url)) {
+            throw new UncorrectedUrlException(sprintf('Can\'t parse url: %s', $url));
         }
 
         foreach ($parsedUrl as $partKey => $value) {
@@ -123,7 +122,7 @@ class UrlLoader implements LoaderInterface
                     }
                 case 'query':
                     {
-                        $parsedUrl[$partKey] = \rawurlencode(\rawurldecode($value));
+                        $parsedUrl[$partKey] = rawurlencode(rawurldecode($value));
                         break;
                     }
                 case 'fragment':
@@ -138,8 +137,8 @@ class UrlLoader implements LoaderInterface
             }
         }
 
-        $urlTemplate = \implode('', \array_intersect(self::URL_PARTS, \array_keys($parsedUrl)));
+        $urlTemplate = implode('', array_intersect(self::URL_PARTS, array_keys($parsedUrl)));
 
-        return \strtr($urlTemplate, $parsedUrl);
+        return strtr($urlTemplate, $parsedUrl);
     }
 }

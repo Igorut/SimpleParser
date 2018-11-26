@@ -25,25 +25,15 @@ class Document
     }
 
     /**
-     * Enable pretty output for text
+     * Set pretty output for document content
+     *
+     * @param bool $value
      *
      * @return Document
      */
-    public function enablePrettyOutput(): self
+    public function setPrettyOutput(bool $value): self
     {
-        $this->document->formatOutput = true;
-
-        return $this;
-    }
-
-    /**
-     * Disable pretty output for text
-     *
-     * @return Document
-     */
-    public function disablePrettyOutput(): self
-    {
-        $this->document->formatOutput = false;
+        $this->document->formatOutput = $value;
 
         return $this;
     }

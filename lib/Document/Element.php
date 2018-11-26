@@ -57,7 +57,7 @@ class Element
         $result = $this->element->setAttribute($name, $value);
 
         if ($result === false) {
-            throw new SetAttributeException(\sprintf('Failed to set attribute %s with value %s', $name, $value));
+            throw new SetAttributeException(sprintf('Failed to set attribute %s with value %s', $name, $value));
         }
 
         return $this;
