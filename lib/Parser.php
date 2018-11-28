@@ -63,6 +63,8 @@ class Parser
     }
 
     /**
+     * Return elements by class name
+     *
      * @param string $className
      *
      * @return Element[]
@@ -96,6 +98,8 @@ class Parser
     }
 
     /**
+     * Alias of removeTags()
+     *
      * @param string $tag
      *
      * @throws NodeIteratorException
@@ -199,6 +203,8 @@ class Parser
     }
 
     /**
+     * Set document instance
+     *
      * @param Document $document
      *
      * @return Parser
@@ -221,6 +227,8 @@ class Parser
     }
 
     /**
+     * Return iterator instance
+     *
      * @return Iterator
      */
     public function getIterator(): Iterator

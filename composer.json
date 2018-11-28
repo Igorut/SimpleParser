@@ -1,11 +1,11 @@
 {
     "name": "igorut/parser",
-    "description": "HTML parser",
+    "description": "Simple HTML parser",
     "type": "library",
     "license": "MIT",
     "authors": [
         {
-            "name": "Vyacheslav",
+            "name": "Vyacheslav Mankevich",
             "email": "sla6843@yandex.ru"
         }
     ],
