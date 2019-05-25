@@ -6,7 +6,7 @@ use SimpleParser\Document\Document;
 use SimpleParser\Document\Element;
 use SimpleParser\Exceptions\NodeIteratorException;
 use SimpleParser\Exceptions\ParserException;
-use SimpleParser\Helper\Iterator;
+use SimpleParser\Iterator\IteratorInterface;
 
 class Parser
 {
@@ -16,14 +16,14 @@ class Parser
     private $document;
 
     /**
-     * @var Iterator
+     * @var IteratorInterface
      */
     private $iterator;
 
-    public function __construct(Document $document = null)
+    public function __construct(Document $document, IteratorInterface $iterator)
     {
         $this->document = $document;
-        $this->iterator = new Iterator();
+        $this->iterator = $iterator;
     }
 
     /**
@@ -68,8 +68,6 @@ class Parser
      * @param string $className
      *
      * @return Element[]
-     *
-     * @throws NodeIteratorException
      */
     public function getElementsByClassName(string $className): array
     {
@@ -145,6 +143,10 @@ class Parser
             $this->iterator->iterateNodes($this->document->getDOMDocument(), function (\DOMNode $rootNode) use ($tag) {
                 for ($i = 0; $i < $rootNode->childNodes->count(); $i++) {
                     $node = $rootNode->childNodes->item($i);
+
+                    if ($node === null) {
+                        continue;
+                    }
 
                     if ($node->nodeName === $tag) {
                         $rootNode->removeChild($node);
@@ -229,9 +231,9 @@ class Parser
     /**
      * Return iterator instance
      *
-     * @return Iterator
+     * @return IteratorInterface
      */
-    public function getIterator(): Iterator
+    public function getIterator(): IteratorInterface
     {
         return $this->iterator;
     }

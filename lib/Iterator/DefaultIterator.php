@@ -1,19 +1,21 @@
 <?php
 
-namespace SimpleParser\Helper;
+namespace SimpleParser\Iterator;
 
 use SimpleParser\Exceptions\NodeIteratorException;
 
-class Iterator
+class DefaultIterator implements IteratorInterface
 {
     public const INTERRUPTED = 8;
     public const FORCE_STOP = 16;
     private const CONTINUE = 32;
 
     /**
+     * @inheritDoc
+     *
      * Iterate over nodes from root node
      *
-     * Callback function SHOULD yield \DOMNode or signal^
+     * Callback function SHOULD yield \DOMNode or signal
      *
      * 1. INTERRUPTED: to stop iterating current node tree passed from $rootNode. Example:
      * We passed <div class="first">
@@ -31,9 +33,6 @@ class Iterator
      * will yield INTERRUPTED signal we will stop iterating over children of div.first
      *
      * 2. FORCE_STOP: to stop iterating completely
-     *
-     * @param \DOMNode $rootNode
-     * @param callable $callback SHOULD return \Generator with next node or empty for end iterating
      *
      * @return int
      *
@@ -79,12 +78,11 @@ class Iterator
     }
 
     /**
+     * @inheritDoc
+     *
      * Iterate over node list and apply callback for each element
      *
      * If callback return false, iterating will end
-     *
-     * @param \DOMNodeList $nodeList
-     * @param callable $callback
      */
     public function iterateNodeList(\DOMNodeList $nodeList, callable $callback): void
     {
